@@ -1,0 +1,26 @@
+
+DECLARE UDPname EXTERNAL CHARACTER;
+
+
+CREATE COMPUTE MODULE statusCode_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+	
+	DECLARE In_name CHARACTER InputRoot.JSON.Data.name;
+	IF(In_name=UDPname) THEN
+		SET OutputRoot.JSON.Data.STATUS='OK';
+	ELSE
+		SET OutputRoot.JSON.Data.STATUS='FALSE';
+	END IF;
+--	DECLARE a CHARACTER InputRoot.JSON.Data.a;
+--		IF(a='200') THEN SET OutputRoot.JSON.Data.Response='Success';
+--		ELSE 
+--			IF(a='500') THEN SET OutputRoot.JSON.Data.Response='Invalid request';
+--			ELSE SET OutputRoot.JSON.Data.Response = 'Internal Server ERROR';
+--			END IF;
+--		END IF;
+	
+	RETURN TRUE;
+END;
+
+END MODULE;

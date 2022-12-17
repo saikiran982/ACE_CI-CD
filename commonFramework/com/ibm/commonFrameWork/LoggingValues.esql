@@ -1,0 +1,41 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE LoggingValues
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN 
+		
+		
+		RETURN TRUE;
+	END;
+	END MODULE;
+	
+CREATE PROCEDURE LoggingValues(IN envRef REFERENCE)
+BEGIN
+		SET envRef.DefaultRecord.CorelationId = envRef.CorelationId;
+		
+		SET envRef.DefaultRecord.IntegrationNode = BrokerName;
+		SET envRef.DefaultRecord.IntegrationServer = ExecutionGroupLabel;
+		SET envRef.DefaultRecord.ApplicationName = ApplicationLabel;
+		SET envRef.DefaultRecord.FlowName = MessageFlowLabel;
+		
+		SET envRef.AuditRecord.Request=COALESCE(envRef.Request,'-');
+		SET envRef.AuditRecord.BackendReq=COALESCE(envRef.BackendReq,'-');
+		SET envRef.AuditRecord.BackendResp=COALESCE(envRef.BackendResp,'-');
+		SET envRef.AuditRecord.Response=COALESCE(envRef.Response,'-');
+		
+		SET envRef.AuditRecord.ESBURL = COALESCE(envRef.ESBURL,'-');
+		SET envRef.AuditRecord.BackendURL=COALESCE(envRef.BackendURL,'-');
+		
+		SET envRef.AuditRecord.TransactionCode		= COALESCE(envRef.TransactionCode,'-');
+		SET envRef.AuditRecord.TransactionStatus	= COALESCE(envRef.TransactionStatus,'-');
+		SET envRef.AuditRecord.TransactionFlag		= COALESCE(envRef.TransactionFlag,'-');
+		
+		SET envRef.DefaultRecord.Logtype =	COALESCE(envRef.Logtype,'-');
+		SET envRef.AuditRecord.Loglevel =	COALESCE(envRef.Logtype,'-');
+		
+		SET envRef.AuditRecord.Requestheader=COALESCE(envRef.Requestheader,'-');
+		SET envRef.AuditRecord.Responseheader=COALESCE(envRef.Responseheader,'-');
+			
+		
+END;

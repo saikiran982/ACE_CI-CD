@@ -1,0 +1,154 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+
+CREATE COMPUTE MODULE ExceptionHandler_ExceptionProcess
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		
+		CREATE FIELD Environment.Variables;
+		DECLARE refEnv REFERENCE TO Environment.Variables;
+		
+		DECLARE refExceptionlist REFERENCE TO InputExceptionList;		
+		DECLARE recordRef REFERENCE TO Environment.AuditRecord;
+		DECLARE defaultRec REFERENCE TO Environment.DefaultRecord; 	
+		
+		IF(FIELDTYPE (InputExceptionList.*[1])) IS NOT NULL THEN
+		CALL SetLastExceptionInfo(refExceptionlist, refEnv);
+	    END IF;
+	    
+		CREATE FIELD Environment.error_info;
+		DECLARE execptionRef REFERENCE TO Environment.error_info;
+		SET execptionRef.IntegrationServer 			= ExecutionGroupLabel;
+		SET execptionRef.TransactionId 				= COALESCE(defaultRec.TransactionId,'-');	
+		SET execptionRef.StartTime 					= defaultRec.StartTime;		
+		SET execptionRef.LastUpdated				= CAST(COALESCE(recordRef.LastUpdated,CURRENT_TIMESTAMP) AS CHARACTER FORMAT 'yyyy-MM-dd HH:mm:ss.SSS');		
+		SET execptionRef.IntegrationNode 			= BrokerName;		
+		SET execptionRef.IntegrationServer 			= ExecutionGroupLabel;
+		SET execptionRef.MsgFlowName 				= MessageFlowLabel;
+		SET execptionRef.ApplicationName			= ApplicationLabel;
+		SET execptionRef.ErrorDescription 			= COALESCE(Environment.errorInfo.StatusDesc, refEnv.LastException.Status.StatusDesc);
+		SET Environment.ErrorDescription			= COALESCE(Environment.errorInfo.StatusDesc, refEnv.LastException.Status.StatusDesc);
+		SET execptionRef.ErrorNumber 				= COALESCE(Environment.errorInfo.ExNumber, refEnv.LastException.Status.ExNumber);
+		SET execptionRef.Reason						= COALESCE(Environment.errorInfo.ExType, refEnv.LastException.Status.ExType);
+		SET execptionRef.DiagnosticsMessage			= COALESCE(Environment.errorInfo.Diagnostics, refEnv.LastException.Status.Diagnostics);
+		SET execptionRef.Status 					= COALESCE(Environment.errorInfo.StatusCode, refEnv.LastException.Status.StatusCode);	
+			
+			
+		
+		--DECLARE exceptionchar CHARACTER	CAST(ASBITSTREAM(InputExceptionList OPTIONS FolderBitStream) AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId ENCODING InputRoot.Properties.Encoding);		
+	DECLARE exceptionchar CHARACTER;
+	IF(FIELDTYPE (InputExceptionList.*[1])) IS NOT NULL THEN
+			DECLARE tmp ROW;
+		CREATE LASTCHILD OF tmp DOMAIN('XMLNSC') NAME 'XMLNSC';
+		SET tmp.XMLNSC.ExceptionList = InputExceptionList;
+		SET tmp.BLOB = ASBITSTREAM(tmp.XMLNSC.ExceptionList OPTIONS FolderBitStream CCSID 1208);
+		SET exceptionchar = CAST(tmp.BLOB AS CHAR CCSID 1208);
+	ELSE
+		SET exceptionchar=Environment.ErrorDescription;
+	END IF;
+		SET OutputRoot.XMLNSC.ERROR.CORELATION_ID  = COALESCE(defaultRec.CorelationId,'-');
+		SET OutputRoot.XMLNSC.ERROR.NODE_NAME     = execptionRef.IntegrationNode;
+		SET OutputRoot.XMLNSC.ERROR.SERVER_NAME   = execptionRef.IntegrationServer;
+		SET OutputRoot.XMLNSC.ERROR.APPLICATION_NAME= execptionRef.ApplicationName;
+		SET OutputRoot.XMLNSC.ERROR.MSG_FLOW_NAME   = execptionRef.MsgFlowName;
+		SET OutputRoot.XMLNSC.ERROR.IN_MESSAGE      = COALESCE(Environment.AuditRecord.Request,'-');
+		SET OutputRoot.XMLNSC.ERROR.BACKEND_REQUEST = COALESCE(Environment.AuditRecord.BackendReq,'-');
+		SET OutputRoot.XMLNSC.ERROR.BACKEND_RESPONSE= COALESCE(Environment.AuditRecord.BackendResp,'-');
+		SET OutputRoot.XMLNSC.ERROR.OUT_MESSAGE     =COALESCE(Environment.AuditRecord.Response,'-');
+		SET OutputRoot.XMLNSC.ERROR.EXCEPTION_LIST  = COALESCE(exceptionchar,'-');
+		SET OutputRoot.XMLNSC.ERROR.REASON          = COALESCE(execptionRef.Reason,'-');
+		SET OutputRoot.XMLNSC.ERROR.ERROR_CODE      = COALESCE(execptionRef.ErrorNumber,'-');
+		SET OutputRoot.XMLNSC.ERROR.ERROR_DESC      = COALESCE(execptionRef.ErrorDescription,'-');
+		SET OutputRoot.XMLNSC.ERROR.DIAGNOSTICS     = COALESCE(execptionRef.DiagnosticsMessage,'-');
+		SET OutputRoot.XMLNSC.ERROR.BACKEND_URL     = COALESCE(Environment.AuditRecord.BackendURL,'-');
+		SET OutputRoot.XMLNSC.ERROR.ESB_URL         = COALESCE(Environment.AuditRecord.ESBURL,'-');
+		SET OutputRoot.XMLNSC.ERROR.TRANSACTION_STATUS= 'Failed';
+		
+--		SET OutputRoot.XMLNSC.ERROR.CARD_NO=COALESCE(Environment.AuditRecord.CARD_NO,'-');
+--		SET OutputRoot.XMLNSC.ERROR.ACCOUNT_NO=COALESCE(Environment.AuditRecord.ACCOUNT_NO,'-');
+--		SET OutputRoot.XMLNSC.ERROR.CVV=COALESCE(Environment.AuditRecord.CVV,'-');
+--		
+--		SET OutputRoot.XMLNSC.ERROR.Token=COALESCE(Environment.AuditRecord.Token,'-');
+		
+		IF (Environment.DefaultRecord.ErrorLogFlag='P') THEN
+		Propagate to TERMINAL 'out' FINALIZE NONE DELETE NONE;
+		END IF;
+		Propagate to TERMINAL 'out1' FINALIZE NONE DELETE NONE;
+		RETURN FALSE;
+	END;
+ 
+	CREATE PROCEDURE SetLastExceptionInfo(IN ExceptionListRef REFERENCE, IN EnvRef REFERENCE)
+	BEGIN
+		DECLARE LastExcpRef REFERENCE TO ExceptionListRef.*[1];		
+		WHILE ENDSWITH(FieldName(LastExcpRef), 'Exception') AND LastMove(LastExcpRef) DO
+			MOVE LastExcpRef LASTCHILD;
+		END WHILE;
+		MOVE LastExcpRef PARENT;
+		DECLARE ExType CHAR COALESCE(FieldName(LastExcpRef), 'Unknown');
+		DECLARE ExNumber CHAR COALESCE(CAST(LastExcpRef.Number AS CHAR), 'Unknown');
+		DECLARE ExText CHAR;
+		DECLARE lastexception REFERENCE TO EnvRef;
+		CREATE LASTCHILD OF EnvRef AS lastexception NAME 'LastException';
+		DECLARE status REFERENCE TO EnvRef;
+		CREATE LASTCHILD OF lastexception AS status NAME 'Status';
+		DECLARE lastExStatusRef REFERENCE TO status;		
+		SET ExText = ExType || ':' || COALESCE(LastExcpRef.Text, 'Unknown');
+		SET lastExStatusRef.Diagnostics = ExText;
+		SET ExText = ExText || ';' || LastExcpRef.Insert[<].Text;
+
+		IF (ExType = 'ParserException') THEN
+			SET lastExStatusRef.StatusCode = 'Input Data Format Error'; 
+		ELSEIF (ExType = 'SocketTimeoutException') THEN
+			SET lastExStatusRef.StatusCode = 'Backend Connectivity Error';  
+		ELSEIF (ExType = 'SocketException') THEN
+			SET lastExStatusRef.ErrorCode='BIP1701E';
+			SET lastExStatusRef.StatusCode = 'Connectivity Error';  
+		ELSEIF (ExType = 'FatalException') THEN
+			SET lastExStatusRef.StatusCode = 'APP Connect Internal Error';
+		ELSEIF (ExType = 'RecoverableException') THEN
+			SET lastExStatusRef.StatusCode = 'Invalid data, or failure to write message to an output node';
+		ELSEIF (ExType = 'ConfigurationException') THEN
+			SET lastExStatusRef.StatusCode = 'Configuration request fails';
+		ELSEIF (ExType = 'SecurityException') THEN
+			SET lastExStatusRef.StatusCode = 'Security failure occured during security processing in input node ';
+		ELSEIF (ExType = 'ConversionException') THEN
+			SET lastExStatusRef.StatusCode = 'Invalid data found during conversion functions';
+		ELSEIF (ExType = 'DatabaseException') THEN
+			SET lastExStatusRef.StatusCode = 'Database system reports an error during broker operation';
+		ELSEIF (ExType = 'UserException') THEN
+			SET lastExStatusRef.StatusCode = 'User-defined exception';
+		ELSEIF (ExType = 'CastException') THEN
+			SET lastExStatusRef.StatusCode = 'Exception while conveting the data types';
+		ELSEIF (ExType = 'MessageException') THEN
+			SET lastExStatusRef.StatusCode = 'Message Exception';
+		ELSEIF (ExType = 'SqlException') THEN
+			SET lastExStatusRef.StatusCode = 'SQL Exception';
+		ELSEIF (ExType = 'UnknownException') THEN
+			SET lastExStatusRef.StatusCode = 'Unknown Exception';
+		ELSE
+			SET lastExStatusRef.StatusCode = 'Unknown Exception';
+		END IF;
+
+		SET lastExStatusRef.ExType = ExType;
+		SET lastExStatusRef.StatusDesc = ExText;
+		SET lastExStatusRef.Location = LastExcpRef.Label;
+		SET lastExStatusRef.ExNumber = ExNumber;	
+		DECLARE flowName, flowNameone, label, nodeName CHARACTER;
+		DECLARE fieldPosition,nPos INTEGER;
+		SET nPos = POSITION('.msgflow' IN label);
+		SET flowName = SUBSTRING(label FROM 1 FOR nPos);
+		IF CONTAINS(label, '.') THEN
+			SET label = SUBSTRING( label AFTER '.');
+		END IF;
+		SET fieldPosition = POSITION('.' IN label);
+		SET flowName = SUBSTRING(label BEFORE '.');
+		IF flowName = NULL OR TRIM(flowName) = '' THEN
+			SET flowName = SUBSTRING(flowNameone BEFORE '#');
+		END IF;
+		SET nodeName = SUBSTRING(label FROM (fieldPosition+1));
+		SET lastExStatusRef.ExFlowName = flowName;	
+	END;
+	
+END MODULE;

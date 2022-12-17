@@ -1,0 +1,47 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE OauthGeneration_OauthGen
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE OauthAvailable CHARACTER Environment.OauthAvailable;
+		DECLARE OauthChar CHARACTER '';
+		DECLARE OauthBlob BLOB;
+		IF(OauthAvailable='NO') THEN
+		
+		SET OutputRoot.HTTPInputHeader."Content-Type"='application/x-www-form-urlencoded';
+			IF (EXISTS(Environment.OauthClientId[])) THEN
+--				SET OutputRoot."x-www-form-urlencoded".client_id=Environment.OauthClientId;
+				SET OauthChar=OauthChar||'client_id='||Environment.OauthClientId||'&';
+			END IF;
+			IF(EXISTS(Environment.OauthClientSecret[])) THEN
+--				SET OutputRoot."x-www-form-urlencoded".client_secret=Environment.OauthClientSecret;
+				SET OauthChar=OauthChar||'client_secret='||Environment.OauthClientSecret||'&';
+			END IF;
+			IF(EXISTS(Environment.username[])) THEN
+--				SET OutputRoot."x-www-form-urlencoded".username=Environment.username;
+				SET OauthChar=OauthChar||'username='||Environment.username||'&';
+			END IF;
+			IF(EXISTS(Environment.password[])) THEN
+--				SET OutputRoot."x-www-form-urlencoded".password=Environment.password;
+				SET OauthChar=OauthChar||'password='||Environment.password||'&';
+			END IF;
+			IF(EXISTS(Environment.scope[])) THEN
+--				SET OutputRoot."x-www-form-urlencoded".scope=Environment.scope;
+				SET OauthChar=OauthChar||'scope='||Environment.scope||'&';
+			END IF;
+			IF(EXISTS(Environment.grant_type[])) THEN
+--				SET OutputRoot."x-www-form-urlencoded".grant_type=Environment.grant_type;
+				SET OauthChar=OauthChar||'grant_type='||Environment.grant_type||'&';
+			END IF;
+			SET OauthChar=SUBSTRING(OauthChar FROM 1 FOR (LENGTH(OauthChar)-1));
+			SET OauthBlob=CAST(OauthChar AS BLOB CCSID 1208 ENCODING 546);
+--		SET OutputLocalEnvironment.Destination.HTTPS.RequestURL='https://192.168.0.184:9443/kbl/sandbox/password/oauth2/token';
+		SET OutputRoot.BLOB.BLOB=OauthBlob;
+		Propagate to TERMINAL 'out';
+		ELSE
+		
+		END IF;
+		RETURN FALSE;
+	END;
+END MODULE;

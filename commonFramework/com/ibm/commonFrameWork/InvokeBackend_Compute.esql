@@ -1,0 +1,52 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+
+CREATE COMPUTE MODULE InvokeBackend_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE httpRetryCount INTEGER;
+		DECLARE sleep BOOLEAN;
+		IF FIELDTYPE (InputRoot.JSON.Data) IS NOT NULL THEN
+			SET Environment.BackendRequestData.JSON.Data=InputRoot.JSON.Data;
+		ELSEIF(EXISTS(Environment.httpRetryCount[])) THEN
+			SET httpRetryCount =Environment.httpRetryCount;
+			SET Environment.httpRetryCount =httpRetryCount+1;
+				IF(Environment.httpRetryCount = 4)  THEN
+--					SET httpRetryCount =Environment.httpRetryCount;
+--					SET Environment.httpRetryCount =httpRetryCount+1;
+					DECLARE appname CHARACTER Environment.DefaultRecord.ApplicationName;
+					DECLARE policyProj CHARACTER;
+					SET policyProj = '{FrameWorkPolicies}:'||appname;
+					SET Environment.AuditRecord.BackendURL =getPolicyProperty(policyProj, 'callBackURL');
+					SET OutputLocalEnvironment.Destination.HTTP.RequestURL=Environment.AuditRecord.BackendURL;
+				ELSEIF(Environment.httpRetryCount =5 ) THEN
+					SET Environment.errorInfo.StatusDesc=CAST(InputRoot.BLOB.BLOB AS CHARACTER CCSID 1208 ENCODING 546);
+					SET Environment.errorInfo.ExNumber=InputRoot.HTTPResponseHeader."X-Original-HTTP-Status-Line";
+					SET Environment.errorInfo.ExType='BackendURLWrongException';
+					SET Environment.errorInfo.Diagnostics=InputRoot.BLOB.BLOB;
+					SET Environment.errorInfo.StatusCode=InputRoot.HTTPResponseHeader."X-Original-HTTP-Status-Code";
+					SET OutputRoot = InputRoot;
+--					SET sleep = SLEEP(60000);
+					Propagate to TERMINAL 'out1';
+					RETURN FALSE;
+				END IF;
+		ELSE
+			SET Environment.httpRetryCount = 1;
+		END IF;
+		SET OutputRoot.JSON.Data=Environment.BackendRequestData.JSON.Data;
+		SET OutputLocalEnvironment.Destination.HTTP.RequestURL=Environment.AuditRecord.BackendURL;
+		Propagate to TERMINAL 'out' FINALIZE NONE DELETE NONE;
+--		IF(InputRoot.HTTPResponseHeader."X-Original-HTTP-Status-Code"=404)THEN
+--		SET Environment.AuditRecord.BackendURL =getPolicyProperty('{FrameWorkPolicies}:test', 'callBackURL');
+--		SET OutputLocalEnvironment.Destination.HTTP.RequestURL=Environment.AuditRecord.BackendURL;
+--	    END IF;
+		RETURN FALSE;
+	END;
+
+		CREATE FUNCTION getPolicyProperty( IN policyName CHARACTER, IN propertyName CHARACTER )
+		RETURNS CHARACTER
+		LANGUAGE JAVA
+		EXTERNAL NAME "getPolicyPackage.MyPolicyAccessClass.getPolicyProperty";
+		
+END MODULE;

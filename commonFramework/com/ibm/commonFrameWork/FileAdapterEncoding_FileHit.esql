@@ -1,0 +1,27 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE FileAdapterEncoding_FileHit
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		DECLARE i INTEGER 1;
+		WHILE TRUE DO
+			SET OutputLocalEnvironment=InputLocalEnvironment;
+			PROPAGATE TO TERMINAL 'out1';
+			
+			IF Environment.flag='P' THEN
+				IF Environment.process='Y' THEN
+					SET OutputRoot.XMLNSC.status='All files processed succesfully';
+				ELSE
+					SET OutputRoot.XMLNSC.status='No files in directory';
+				END IF;
+				PROPAGATE TO TERMINAL 'out2' delete DEFAULT;
+				RETURN FALSE;
+				
+			END IF;
+		END WHILE;
+		RETURN FALSE;
+	END;
+END MODULE;

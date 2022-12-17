@@ -1,0 +1,45 @@
+
+
+CREATE COMPUTE MODULE xml2JSON_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+--		SET OutputRoot.Properties=InputRoot.Properties;
+		DECLARE transactionMsgBlob1 BLOB ASBITSTREAM(InputRoot.XMLNSC.Request.FileXML.Root CCSID 1208 ENCODING 546);
+		DECLARE transactionMsgChar1 CHARACTER CAST(transactionMsgBlob1 AS CHAR CCSID 1208 ENCODING 546);
+--		SET transactionMsgChar1=REPLACE(transactionMsgChar1,'"','');
+--		SET OutputRoot.JSON.Data.Request.FileXML=transactionMsgChar1;
+		
+		
+		DECLARE INREF REFERENCE TO InputRoot.XMLNSC.Request;
+		SET OutputRoot.Properties = InputRoot.Properties;
+		SET OutputRoot.Properties.MessageType = '{}:delimater';
+		SET OutputRoot.Properties.MessageFormat = 'csv';
+		SET OutputRoot.Properties.MessageSet='';	
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'DFDL';
+		
+--		SET OutputRoot.DFDL.request.Request.FileXML=transactionMsgChar1;
+--		SET OutputRoot.DFDL.request.Request.Io_User_Id=INREF.Io_User_Id;
+--		SET OutputRoot.DFDL.request.Request.Io_Schedule_No=INREF.Io_Schedule_No;
+--		SET OutputRoot.DFDL.request.Request.strAuthTokenID=INREF.strAuthTokenID;
+--		SET OutputRoot.DFDL.request.Request.prodcode=INREF.prodcode;
+--		SET OutputRoot.DFDL.request.Request.PosPolicyNo=INREF.PosPolicyNo;
+		
+		SET OutputRoot.DFDL.request.Request.FileXML='FileXML='||transactionMsgChar1;
+		SET OutputRoot.DFDL.request.Request.Io_User_Id='Io_User_Id='||INREF.Io_User_Id;
+		SET OutputRoot.DFDL.request.Request.Io_Schedule_No='Io_Schedule_No='||INREF.Io_Schedule_No;
+		SET OutputRoot.DFDL.request.Request.strAuthTokenID='strAuthTokenID='||INREF.strAuthTokenID;
+		SET OutputRoot.DFDL.request.Request.prodcode='prodcode='||INREF.prodcode;
+		SET OutputRoot.DFDL.request.Request.PosPolicyNo='PosPolicyNo='||INREF.PosPolicyNo;
+		
+		
+--		SET OutputRoot.JSON.Data.Request.Io_User_Id=InputRoot.XMLNSC.Request.Io_User_Id;
+--		SET OutputRoot.JSON.Data.Request.Io_Schedule_No=InputRoot.XMLNSC.Request.Io_Schedule_No;
+--		SET OutputRoot.JSON.Data.Request.strAuthTokenID=InputRoot.XMLNSC.Request.strAuthTokenID;
+--		SET OutputRoot.JSON.Data.Request.prodcode=InputRoot.XMLNSC.Request.prodcode;
+--		SET OutputRoot.JSON.Data.Request.PosPolicyNo=InputRoot.XMLNSC.Request.PosPolicyNo;
+		RETURN TRUE;
+	END;
+
+END MODULE;

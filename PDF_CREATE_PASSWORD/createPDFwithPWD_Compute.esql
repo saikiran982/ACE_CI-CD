@@ -1,0 +1,22 @@
+
+
+CREATE COMPUTE MODULE createPDFwithPWD_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE FILE CHARACTER InputRoot.JSON.Data.PDFdetails.Location;
+		DECLARE Data CHARACTER InputRoot.JSON.Data.PDFdetails.Data;
+		DECLARE password CHARACTER InputRoot.JSON.Data.PDFdetails.password;
+		
+		
+		DECLARE response CHARACTER;
+		SET response= CreatePDFwithPWD(FILE, Data, password);
+		SET OutputRoot.JSON.Data.Response = 'check this...... '||response||' cross verify with the given password: '||password;
+		RETURN TRUE;
+	END;
+		CREATE PROCEDURE CreatePDFwithPWD(In FILE CHAR,IN Data CHAR, IN password CHAR)
+		RETURNS CHAR
+		LANGUAGE JAVA
+		EXTERNAL NAME "CommandExec.CommandSimpleExec.executeCommandOne";
+
+END MODULE;

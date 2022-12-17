@@ -1,0 +1,10 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE FileAdapterDecoding_noFile
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET Environment.flag='P';
+		RETURN FALSE;
+	END;
+END MODULE;

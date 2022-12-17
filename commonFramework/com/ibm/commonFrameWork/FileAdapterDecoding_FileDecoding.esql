@@ -1,0 +1,14 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE FileAdapterDecoding_FileDecoding
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET Environment.process='Y';
+		SET OutputRoot.BLOB.BLOB=BASE64DECODE(InputRoot.JSON.Data.Response);
+		SET OutputDestinationList=InputDestinationList;
+		SET OutputLocalEnvironment.Destination.File.Directory ='C:\Users\SSC\Desktop\FileDecoder';
+		PROPAGATE TO TERMINAL 'out' ENVIRONMENT OutputLocalEnvironment;
+		RETURN FALSE;
+	END;
+END MODULE;

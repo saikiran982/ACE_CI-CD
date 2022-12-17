@@ -1,0 +1,15 @@
+
+
+CREATE COMPUTE MODULE loopbackRequestFlow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		SET OutputLocalEnvironment.Destination.Loopback.Request.operation='Create';
+--		SET OutputLocalEnvironment.Destination.Loopback.Request.operation='Update';
+--		SET OutputLocalEnvironment.Destination.Loopback.Request.operation='Delete';
+--		SET OutputLocalEnvironment.Destination.Loopback.Request.id='62e8c1dc34083a1324500371';
+		SET OutputRoot.JSON.Data=InputRoot.JSON.Data;
+		RETURN TRUE;
+	END;
+END MODULE;

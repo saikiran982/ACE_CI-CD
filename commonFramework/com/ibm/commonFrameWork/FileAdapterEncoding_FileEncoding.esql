@@ -1,0 +1,14 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE FileAdapterEncoding_FileEncoding
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET Environment.process='Y';
+		SET OutputRoot.JSON.Data.Response=BASE64ENCODE(InputRoot.BLOB.BLOB);
+		SET OutputDestinationList=InputDestinationList;
+		SET OutputLocalEnvironment.Destination.File.Directory ='C:\Users\SSC\Desktop\FileEncrypt';
+		PROPAGATE TO TERMINAL 'out' ENVIRONMENT OutputLocalEnvironment;
+		RETURN FALSE;
+	END;
+END MODULE;

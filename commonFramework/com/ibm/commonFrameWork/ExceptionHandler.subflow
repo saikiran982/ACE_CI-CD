@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmFileOutput.msgnode="ComIbmFileOutput.msgnode" xmlns:ComIbmFlowOrder.msgnode="ComIbmFlowOrder.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:com_ibm_commonFrameWork_MailAlert.subflow="com/ibm/commonFrameWork/MailAlert.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility"
+    nsURI="com/ibm/commonFrameWork/ExceptionHandler.subflow" nsPrefix="com_ibm_commonFrameWork_ExceptionHandler.subflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true" nodeLayoutStyle="RECTANGLE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.toAddresses" name="toAddresses" defaultValueLiteral="rakesh@pronteff.com">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.toAddresses1" name="toAddresses1" defaultValueLiteral="rakesh@pronteff.com">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <translation xmi:type="utility:TranslatableString" key="ExceptionHandler" bundleName="com/ibm/commonFrameWork/ExceptionHandler" pluginId="commonFramework"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/commonFramework/icons/full/obj16/ExceptionHandler.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/commonFramework/icons/full/obj30/ExceptionHandler.gif"/>
+    <composition>
+      <nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="7,172">
+        <translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/ibm/commonFrameWork/ExceptionHandler" pluginId="commonFramework"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="402,173" transaction="commit" computeExpression="esql://routine/com.ibm.commonFrameWork#ExceptionHandler_ExceptionProcess.Main" computeMode="all">
+        <translation xmi:type="utility:ConstantString" string="ExceptionProcess"/>
+      </nodes>
+      <nodes xmi:type="ComIbmFileOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="776,102" outputDirectory="C:\Users\SSC\Desktop\FrameWork\Error" outputFilename="TraceLog.txt" outputMode="archiveAndReplaceWithTimestamp" fileFtp="true" remoteTransferType="SFTP" fileFtpServer="192.168.0.91:22" fileFtpUser="sftpSec" fileFtpDirectory="/home/sftpuser/AceEnhance/ERROR">
+        <translation xmi:type="utility:ConstantString" string="File Output"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="582,98" computeExpression="esql://routine/com.ibm.commonFrameWork#ExceptionHandler_CatchError.Main" computeMode="all">
+        <translation xmi:type="utility:ConstantString" string="CatchError"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="654,171" queueName="ERROR_Q" destinationQueueManagerName="UATQM">
+        <translation xmi:type="utility:ConstantString" string="MQ Output"/>
+      </nodes>
+      <nodes xmi:type="ComIbmFlowOrder.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="181,172">
+        <translation xmi:type="utility:ConstantString" string="Flow Order"/>
+      </nodes>
+      <nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="657,262">
+        <translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="com/ibm/commonFrameWork/ExceptionHandler" pluginId="commonFramework"/>
+      </nodes>
+      <nodes xmi:type="com_ibm_commonFrameWork_MailAlert.subflow:FCMComposite_1" xmi:id="FCMComposite_1_2" location="411,258">
+        <translation xmi:type="utility:ConstantString" string="MailAlert"/>
+      </nodes>
+      <nodes xmi:type="com_ibm_commonFrameWork_MailAlert.subflow:FCMComposite_1" xmi:id="FCMComposite_1_5" location="1036,90">
+        <translation xmi:type="utility:ConstantString" string="MailAlert1"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_14" targetNode="FCMComposite_1_7" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.first" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.second" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.EmailOutputCharacterSearch" describedAttribute="Property.toAddresses">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.toAddresses" bundleName="ComIbmEmailOutput" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+        <propertyDescriptor groupName="Group.Group1" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.EmailOutputCharacterSearch" describedAttribute="Property.toAddresses1">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.toAddresses1" bundleName="com/ibm/commonFrameWork/ExceptionHandler" pluginId="commonFramework"/>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <attributeLinks promotedAttribute="Property.toAddresses" overriddenNodes="FCMComposite_1_2">
+      <overriddenAttribute href="com/ibm/commonFrameWork/MailAlert.subflow#Property.toAddresses"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.toAddresses1" overriddenNodes="FCMComposite_1_5">
+      <overriddenAttribute href="com/ibm/commonFrameWork/MailAlert.subflow#Property.toAddresses"/>
+    </attributeLinks>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

@@ -1,0 +1,12 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE FileAdapterEncoding_noFile
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		SET Environment.flag='P';
+		RETURN FALSE;
+	END;
+END MODULE;

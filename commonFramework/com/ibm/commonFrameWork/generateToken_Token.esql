@@ -1,0 +1,21 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+
+CREATE COMPUTE MODULE generateToken_Token
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		DECLARE i INTEGER;
+		SET i=InputRoot.HTTPResponseHeader."X-Original-HTTP-Status-Code";
+		
+		IF (i = 200) THEN
+			SET Environment.tokenStatus='status';
+		ELSE
+			SET Environment.tokenStatus='failed';
+		END IF;
+		
+		RETURN FALSE;
+	END;
+END MODULE;

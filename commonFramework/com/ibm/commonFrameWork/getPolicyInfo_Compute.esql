@@ -1,0 +1,21 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+
+CREATE COMPUTE MODULE getPolicyInfo_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE InterafaceName CHARACTER ApplicationLabel;
+		
+		SET Environment.EmailAlert=getPolicyProperty('{FrameWorkPolicies}:alertsPolicy', InterafaceName);
+	
+		SET Environment.BackendURL=getPolicyProperty('{FrameWorkPolicies}:BackendConfiguration', InterafaceName);
+
+		RETURN FALSE;
+	END;
+	
+		CREATE FUNCTION getPolicyProperty( IN policyName CHARACTER, IN propertyName CHARACTER )
+		RETURNS CHARACTER
+		LANGUAGE JAVA
+		EXTERNAL NAME "getPolicyPackage.MyPolicyAccessClass.getPolicyProperty";
+END MODULE;

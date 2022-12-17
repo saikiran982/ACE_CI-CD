@@ -1,0 +1,40 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+
+CREATE COMPUTE MODULE AuditLogging_Audit_Log
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE defaultRec REFERENCE TO Environment.DefaultRecord; 
+		DECLARE curtime CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyy-MM-dd HH.mm:ss.SSSSS');
+		
+		SET OutputRoot.XMLNSC.Audit.CORELATION_ID=COALESCE(defaultRec.CorelationId,'-');
+		SET OutputRoot.XMLNSC.Audit.NODE_NAME=COALESCE(defaultRec.IntegrationNode,'-');
+		SET OutputRoot.XMLNSC.Audit.SERVER_NAME=COALESCE(defaultRec.IntegrationServer,'-');
+		SET OutputRoot.XMLNSC.Audit.APPLICATION_NAME=COALESCE(defaultRec.ApplicationName,'-');
+		SET OutputRoot.XMLNSC.Audit.MSG_FLOW_NAME=COALESCE(defaultRec.FlowName,'-');
+		
+		SET OutputRoot.XMLNSC.Audit.LOGTYPE=COALESCE(defaultRec.Logtype,'-');
+		SET OutputRoot.XMLNSC.Audit.IN_MESSAGE=COALESCE(Environment.AuditRecord.Request,'-');
+		SET OutputRoot.XMLNSC.Audit.BACKEND_REQUEST=COALESCE(Environment.AuditRecord.BackendReq,'-');
+		SET OutputRoot.XMLNSC.Audit.BACKEND_RESPONSE=COALESCE(Environment.AuditRecord.BackendResp,'-');
+		SET OutputRoot.XMLNSC.Audit.OUT_MESSAGE=COALESCE(Environment.AuditRecord.Response,'-');
+		
+		SET OutputRoot.XMLNSC.Audit.BACKEND_URL=COALESCE(Environment.AuditRecord.BackendURL,'-');
+		SET OutputRoot.XMLNSC.Audit.ESB_URL=COALESCE(Environment.AuditRecord.ESBURL,'-');
+		SET OutputRoot.XMLNSC.Audit.TRANSACTION_CODE=COALESCE(Environment.AuditRecord.TransactionCode,'-');
+		SET OutputRoot.XMLNSC.Audit.TRANSACTION_STATUS=COALESCE(Environment.AuditRecord.TransactionStatus,'-');
+		SET OutputRoot.XMLNSC.Audit.TRANSACTION_FLAG=COALESCE(Environment.AuditRecord.TransactionFlag,'-');
+		SET OutputRoot.XMLNSC.Audit.LOGLEVEL       = COALESCE(Environment.AuditRecord.Loglevel,'-');
+	    SET OutputRoot.XMLNSC.Audit.REQUESTHEADER  = COALESCE(Environment.AuditRecord.Requestheader,'-');
+	    SET OutputRoot.XMLNSC.Audit.RESPONSEHEADER = COALESCE(Environment.AuditRecord.Responseheader,'-');
+	    
+--	    SET OutputRoot.XMLNSC.Audit.CARD_NO=COALESCE(Environment.AuditRecord.CARD_NO,'-');
+--	    SET OutputRoot.XMLNSC.Audit.ACCOUNT_NO=COALESCE(Environment.AuditRecord.ACCOUNT_NO,'-');
+--	    SET OutputRoot.XMLNSC.Audit.CVV=COALESCE(Environment.AuditRecord.CVV,'-');
+--	    
+--	    SET OutputRoot.XMLNSC.Audit.Token=COALESCE(Environment.AuditRecord.Token,'-');
+	    
+		RETURN TRUE;
+	END;
+END MODULE;

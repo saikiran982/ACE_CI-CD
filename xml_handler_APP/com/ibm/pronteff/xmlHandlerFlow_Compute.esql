@@ -1,0 +1,29 @@
+BROKER SCHEMA com.ibm.pronteff
+
+
+CREATE COMPUTE MODULE xmlHandlerFlow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		DECLARE blobData BLOB InputRoot.MIME.Parts.Part.Data.BLOB.BLOB;
+		DECLARE charData CHARACTER CAST(blobData AS CHARACTER CCSID 1208 ENCODING 546);
+		
+		IF CONTAINS(charData, '<') THEN
+			CREATE LASTCHILD OF Environment.Response DOMAIN 'XMLNSC' PARSE(blobData);
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			SET OutputRoot.JSON.Data=Environment.Response.XMLNSC;
+		ELSEIF CONTAINS(charData, '{') THEN
+			CREATE LASTCHILD OF Environment.Response DOMAIN 'JSON' PARSE(blobData);
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			SET OutputRoot.JSON.Data=Environment.Response.JSON.Data;
+		ELSE
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			SET OutputRoot.JSON.Data='The coming File does not belongs to XML or JSON';
+			
+		END IF;
+		
+		
+		RETURN TRUE;
+	END;
+END MODULE;

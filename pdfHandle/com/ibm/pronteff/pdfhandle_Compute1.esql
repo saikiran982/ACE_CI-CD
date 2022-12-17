@@ -1,0 +1,20 @@
+BROKER SCHEMA com.ibm.pronteff
+
+
+CREATE COMPUTE MODULE pdfhandle_Compute1
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		DECLARE FileExist CHARACTER;
+		SET FileExist = InputLocalEnvironment.File.Read.NoMatchReason;
+		DELETE FIELD InputLocalEnvironment;
+		IF FileExist='NoFile' THEN
+			SET Environment.FileExist='NO';
+			RETURN FALSE;
+		ELSE
+--			SET Environment.FileNameList[1].fileName='';
+			RETURN FALSE;
+		END IF;
+	END;
+END MODULE;

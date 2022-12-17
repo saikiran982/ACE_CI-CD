@@ -1,0 +1,62 @@
+BROKER SCHEMA com.ibm.pronteff
+
+
+CREATE COMPUTE MODULE pdfhandle_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		DECLARE ContentDispo, fileName, fileExt, TransactionId CHARACTER;
+		SET TransactionId = InputRoot.HTTPInputHeader.Transactionid;
+		SET ContentDispo= InputRoot.MIME.Parts.Part."Content-Disposition";
+		SET fileName = SUBSTRING(ContentDispo AFTER 'filename="');
+		SET fileName = SUBSTRING(fileName BEFORE '"');
+		SET fileExt = SUBSTRING(fileName AFTER '.');
+		
+		IF fileExt='pdf' OR fileExt='CSV' THEN
+--			SET OutputLocalEnvironment.Destination.File.Directory ='C:\Users\SSC\Desktop\PDFDir';
+			SET OutputLocalEnvironment.Destination.File.Name = fileName;
+			PROPAGATE TO TERMINAL 'out1' FINALIZE NONE DELETE NONE;
+			DELETE FIELD OutputLocalEnvironment;
+			IF Environment.FileExist='NO' THEN
+				SET OutputRoot.Properties=InputRoot.Properties;
+				SET OutputRoot.Properties.ContentType='application/pdf';
+				Set Environment.blobData=InputRoot.MIME.Parts.Part.Data.BLOB.BLOB;
+				DECLARE blobData BLOB InputRoot.MIME.Parts.Part.Data.BLOB.BLOB;
+--				SET OutputLocalEnvironment.Destination.File.Directory ='C:\Users\SSC\Desktop\PDFDir';
+				SET OutputLocalEnvironment.Destination.File.Name =fileName;
+				SET OutputRoot.BLOB.BLOB=blobData;
+				PROPAGATE TO TERMINAL 'out';
+				
+				CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+				SET OutputRoot.JSON.Data.Response.TransactionId=TransactionId;
+				SET OutputRoot.JSON.Data.Response.statucode='1';
+				SET OutputRoot.JSON.Data.Response.description='File transfered succesfully';
+				PROPAGATE TO TERMINAL 'out2' FINALIZE NONE DELETE NONE;
+				RETURN FALSE;
+				
+				RETURN FALSE;
+			ELSE
+				CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+				SET OutputRoot.JSON.Data.Response.TransactionId=TransactionId;
+				SET OutputRoot.JSON.Data.Response.statucode='2';
+				SET OutputRoot.JSON.Data.Response.description='File already existed in the directory';
+				PROPAGATE TO TERMINAL 'out2' FINALIZE NONE DELETE NONE;
+				RETURN FALSE;
+			END IF;
+		ELSE
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			SET OutputRoot.JSON.Data.Response.TransactionId=TransactionId;
+			SET OutputRoot.JSON.Data.Response.statucode='0';
+			SET OutputRoot.JSON.Data.Response.description='File is invalid format type';
+			PROPAGATE TO TERMINAL 'out2' FINALIZE NONE DELETE NONE;
+			RETURN FALSE;			
+		END IF;
+		
+--		SET OutputRoot.Properties=InputRoot.Properties;
+--		SET OutputRoot.Properties.ContentType='application/pdf';
+--		Set Environment.blobData=InputRoot.MIME.Parts.Part.Data.BLOB.BLOB;
+--		DECLARE blobData BLOB InputRoot.MIME.Parts.Part.Data.BLOB.BLOB;
+--		SET OutputRoot.BLOB.BLOB=blobData;
+	END;
+END MODULE;

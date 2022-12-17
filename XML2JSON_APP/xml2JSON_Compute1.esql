@@ -1,0 +1,29 @@
+
+
+CREATE COMPUTE MODULE xml2JSON_Compute1
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+--		DECLARE transactionMsgBlob2 BLOB ASBITSTREAM(InputRoot.DFDL.request, InputRoot.Properties.Encoding, InputRoot.Properties.CodedCharSetId );
+--		DECLARE transactionMsgChar2 CHARACTER CAST(transactionMsgBlob2 AS CHAR CCSID 1208);
+--		SET transactionMsgChar2=REPLACE(transactionMsgChar2,'""','"');
+--		SET OutputRoot.JSON.Data.Result=transactionMsgChar2;
+--	SET OutputRoot.JSON.Data.Result=REPLACE(InputRoot.DFDL.request,'""','"');
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;

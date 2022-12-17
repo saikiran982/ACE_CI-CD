@@ -1,0 +1,12 @@
+BROKER SCHEMA com.ibm.commonFrameWork
+
+
+CREATE COMPUTE MODULE InvokeBackend_BackenFailureResp
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.JSON.Data.errorResponse.Status='Failure';
+		SET OutputRoot.JSON.Data.errorResponse.REASON=InputRoot.XMLNSC.ERROR.REASON;
+		SET OutputRoot.JSON.Data.errorResponse.ERROR_CODE=InputRoot.XMLNSC.ERROR.ERROR_CODE;
+		SET OutputRoot.JSON.Data.errorResponse.ERROR_DESC=InputRoot.XMLNSC.ERROR.ERROR_DESC;
+	END;
+END MODULE;
